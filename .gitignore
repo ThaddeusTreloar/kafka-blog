@@ -34,7 +34,8 @@ replay_pid*
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -116,3 +117,4 @@ terraform.rc
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform,macos,java,maven
 
+.vscode/*
