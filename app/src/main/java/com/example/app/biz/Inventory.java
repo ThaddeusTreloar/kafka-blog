@@ -16,9 +16,6 @@ import com.example.app.types.Order;
 import com.example.app.types.OrderState;
 import com.example.app.util.Topics;
 
-import lombok.extern.java.Log;
-
-@Log
 @Configuration
 public class Inventory {
 
@@ -37,48 +34,54 @@ public class Inventory {
     }
 
     @Bean
-    public void orders(StreamsBuilder builder) {
+    public void aggregte_sub_orders(StreamsBuilder builder) {
         var topics = Topics.build_topics();
         var orders_topic = topics.getOrders();
         var sub_order_validations_topic = topics.getSubOrderValidations();
-
-        var orders = builder
-            .stream(
-                orders_topic.getName(),
-                Consumed.with(orders_topic.getKeySerde(), orders_topic.getValueSerde())
-            );
-
-        orders.filter((id, order) -> order.is(OrderState.PENDING))
-            .flatMap((id, order) -> order.intoSubOrders(id))
-            .to(sub_order_validations_topic.getName());
 
         builder.stream(
                 sub_order_validations_topic.getName(),
                 Consumed.with(sub_order_validations_topic.getKeySerde(), sub_order_validations_topic.getValueSerde())
             ).groupByKey()
-            .aggregate(() -> Order.builder().status(OrderState.PENDING).build(), (k, v, agg) -> {
-                agg.addProduct(v.intoOrderProduct());
+            .aggregate(Order::newPending, (k, validate_sub_order, joined_order) -> {
+                joined_order.addProduct(validate_sub_order.intoOrderProduct());
+                joined_order.setOrderId(k);
 
-                if (!v.isFullfilled()) {
-                    agg.setStatus(OrderState.REJECTED);
-                } else if (v.getSubOrder().getOrderParts() == agg.getSubOrderCount() && agg.isNot(OrderState.REJECTED)) {
-                    agg.setStatus(OrderState.ALLOCATED);
+                if (!validate_sub_order.isFullfilled()) {
+                    joined_order.setStatus(OrderState.REJECTED);
+                } else if (validate_sub_order.getSubOrder().getOrderParts() == joined_order.getSubOrderCount() && joined_order.isNot(OrderState.REJECTED)) {
+                    joined_order.setStatus(OrderState.ALLOCATED);
                 }
 
-                return agg;
+                return joined_order;
             }).toStream()
             .filter(
                 (k, v) -> v.isNot(OrderState.PENDING)
             ).to(orders_topic.getName());
     }
 
-    @Bean void current_inventory(StreamsBuilder builder) {
+    @Bean
+    public void split_orders(StreamsBuilder builder) {
+        var topics = Topics.build_topics();
+        var orders_topic = topics.getOrders();
+        var sub_order_validations_topic = topics.getSubOrderValidations();
+
+        builder
+            .stream(
+                orders_topic.getName(),
+                Consumed.with(orders_topic.getKeySerde(), orders_topic.getValueSerde())
+            ).filter((id, order) -> order.is(OrderState.PENDING))
+            .flatMap((id, order) -> order.intoSubOrders(id))
+            .to(sub_order_validations_topic.getName());
+    }
+
+    @Bean void validate_sub_orders(StreamsBuilder builder) {
         var topics = Topics.build_topics();
 
-        var inventory_topic = topics.getInventory();
+        var inventory_topic = topics.getWarehouseInventory();
         var sub_order_validations_topic = topics.getSubOrderValidations();
         var sub_orders_topic = topics.getSubOrders();
-        var net_inventory_topic = topics.getNetInventory();
+        var allocated_inventory_topic = topics.getAllocatedInventory();
 
         var inventory = builder.stream(
                 inventory_topic.getName(),
@@ -90,14 +93,14 @@ public class Inventory {
                 Consumed.with(sub_orders_topic.getKeySerde(), sub_orders_topic.getValueSerde())
             );
 
-        var reservedStock = Stores
+        var allocated_inventory = Stores
             .keyValueStoreBuilder(
-                Stores.persistentKeyValueStore(net_inventory_topic.getName()),
-                net_inventory_topic.getKeySerde(), net_inventory_topic.getValueSerde()
+                Stores.persistentKeyValueStore(allocated_inventory_topic.getName()),
+                allocated_inventory_topic.getKeySerde(), allocated_inventory_topic.getValueSerde()
             )
             .withLoggingEnabled(new HashMap<>());
 
-        builder.addStateStore(reservedStock);
+        builder.addStateStore(allocated_inventory);
 
         sub_orders
             .join(
@@ -106,7 +109,7 @@ public class Inventory {
                     .subOrder(left)
                     .currentInventory(right)
                     .build()
-            ).process(OrderValidator::new, net_inventory_topic.getName())
+            ).process(OrderValidator::new, allocated_inventory_topic.getName())
             .to(sub_order_validations_topic.getName());
     }
 }

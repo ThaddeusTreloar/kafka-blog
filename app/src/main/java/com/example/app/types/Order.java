@@ -28,6 +28,12 @@ public class Order {
         return this.status.isNot(state);
     }
 
+    public static Order newPending() {
+        return Order.builder()
+            .status(OrderState.PENDING)
+            .build();
+    }
+
     public List<KeyValue<Long, SubOrder>> intoSubOrders() {
         return this.products
             .stream()
@@ -35,7 +41,7 @@ public class Order {
                 (product) -> {
                     var product_id = product.getId();
                     var new_suborder = SubOrder.builder()
-                        .id(this.getOrderId())
+                        .orderId(this.getOrderId())
                         .volume(product.getVolume())
                         .orderParts(this.getProducts().size())
                         .build();
@@ -52,7 +58,7 @@ public class Order {
                 (product) -> {
                     var product_id = product.getId();
                     var new_suborder = SubOrder.builder()
-                        .id(id)
+                        .orderId(id)
                         .volume(product.getVolume())
                         .orderParts(this.getProducts().size())
                         .build();

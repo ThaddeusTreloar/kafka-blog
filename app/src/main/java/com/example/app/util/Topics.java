@@ -12,35 +12,27 @@ import lombok.Getter;
 
 @Builder @Getter
 public class Topics {
-    private Topic<Long, String> orderValidations;
-    private Topic<Long, Long> inventory;
-    private Topic<Long, Long> netInventory;
+    private Topic<Long, Long> warehouseInventory;
+    private Topic<Long, Long> allocatedInventory;
     private Topic<Long, Order> orders;
     private Topic<Long, SubOrder> subOrders;
     private Topic<Long, ValidatedSubOrder> subOrderValidations;
 
-    private static String ORDER_VALIDATIONS_TOPIC = "ORDER_VALIDATIONS";
-    private static String INVENTORY_TOPIC = "INVENTORY";
-    private static String NET_INVENTORY_TOPIC = "NET_INVENTORY";
+    private static String WAREHOUSE_INVENTORY_TOPIC = "INVENTORY";
+    private static String ALLOCATED_INVENTORY_TOPIC = "NET_INVENTORY";
     private static String ORDERS_TOPIC = "ORDERS";
     private static String SUB_ORDERS_TOPIC = "SUB_ORDERS";
     private static String SUB_ORDER_VALIDATIONS_TOPIC = "SUB_ORDER_VALIDATIONS";
 
     public static Topics build_topics() {
-        var confirmed_orders = Topic.<Long, String>builder()
-            .name(ORDER_VALIDATIONS_TOPIC)
-            .keySerde(Serdes.Long())
-            .valueSerde(new JsonSerde<String>())
-            .build();
-
-        var inventory = Topic.<Long, Long>builder()
-            .name(INVENTORY_TOPIC)
+        var warehouse_inventory = Topic.<Long, Long>builder()
+            .name(WAREHOUSE_INVENTORY_TOPIC)
             .keySerde(Serdes.Long())
             .valueSerde(Serdes.Long())
             .build();
 
-        var net_inventory = Topic.<Long, Long>builder()
-            .name(NET_INVENTORY_TOPIC)
+        var allocated_inventory = Topic.<Long, Long>builder()
+            .name(ALLOCATED_INVENTORY_TOPIC)
             .keySerde(Serdes.Long())
             .valueSerde(Serdes.Long())
             .build();
@@ -64,9 +56,8 @@ public class Topics {
             .build();
 
         return Topics.builder()
-            .orderValidations(confirmed_orders)
-            .inventory(inventory)
-            .netInventory(net_inventory)
+            .warehouseInventory(warehouse_inventory)
+            .allocatedInventory(allocated_inventory)
             .orders(orders)
             .subOrders(sub_orders)
             .subOrderValidations(sub_order_validations)

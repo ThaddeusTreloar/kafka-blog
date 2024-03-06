@@ -5,13 +5,13 @@ import lombok.Getter;
 
 @Builder @Getter
 public class SubOrder {
-    private Long id;
+    private Long orderId;
     private Integer orderParts;
     private Long volume;
 
     public OrderProduct inOrderProduct() {
         return OrderProduct.builder()
-            .id(this.getId())
+            .id(this.getOrderId())
             .volume(this.getVolume())
             .build();
     }

@@ -19,16 +19,15 @@ public class OrderValidator implements Processor<Long, JoinedSubOrder, Long, Val
 
         netInventory = context.getStateStore(
             Topics.build_topics()
-                .getNetInventory()
+                .getAllocatedInventory()
                 .getName()
         );
     }
 
     @Override
     public void process(Record<Long, JoinedSubOrder> record) {
-      //Look up locally 'reserved' stock from our state store
         var sub_order = record.value().getSubOrder();
-        var total_inventory = record.value().getCurrentInventory();
+        var warehouse_inventory = record.value().getCurrentInventory();
         var product = record.key();
 
         Long allocated = this.netInventory.get(product);
@@ -41,16 +40,16 @@ public class OrderValidator implements Processor<Long, JoinedSubOrder, Long, Val
 
         ValidatedSubOrder validated_order = null;
 
-        if (total_inventory - new_allocation >= 0) {
+        var stock_is_available = warehouse_inventory - new_allocation >= 0;
+
+        if (stock_is_available) {
             netInventory.put(product, new_allocation);
-            validated_order = ValidatedSubOrder.builder()
-                .isFullfilled(true)
-                .subOrder(sub_order).build();
-        } else {
-            validated_order = ValidatedSubOrder.builder()
-                .isFullfilled(false)
-                .subOrder(sub_order).build();
         }
-        context.forward(record.withKey(sub_order.getId()).withValue(validated_order));
+
+        validated_order = ValidatedSubOrder.builder()
+            .isFullfilled(stock_is_available)
+            .subOrder(sub_order).build();
+
+        context.forward(record.withKey(sub_order.getOrderId()).withValue(validated_order));
     }
 }
