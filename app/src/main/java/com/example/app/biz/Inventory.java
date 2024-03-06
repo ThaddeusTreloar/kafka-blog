@@ -2,8 +2,10 @@ package com.example.app.biz;
 
 import java.util.HashMap;
 
+import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
+import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.Stores;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.annotation.Bean;
@@ -36,43 +38,78 @@ public class Inventory {
     @Bean
     public void aggregte_sub_orders(StreamsBuilder builder) {
         var topics = Topics.build_topics();
+        var inventory_topic = topics.getWarehouseInventory();
         var orders_topic = topics.getOrders();
         var sub_order_validations_topic = topics.getSubOrderValidations();
 
-        builder.stream(
+        var validated_orders = builder.stream(
                 sub_order_validations_topic.getName(),
                 Consumed.with(sub_order_validations_topic.getKeySerde(), sub_order_validations_topic.getValueSerde())
             ).groupByKey()
             .aggregate(Order::newPending, (k, validate_sub_order, joined_order) -> {
-                joined_order.addProduct(validate_sub_order.intoOrderProduct());
                 joined_order.setOrderId(k);
-
-                if (!validate_sub_order.isFullfilled()) {
-                    joined_order.setStatus(OrderState.REJECTED);
-                } else if (validate_sub_order.getSubOrder().getOrderParts() == joined_order.getSubOrderCount() && joined_order.isNot(OrderState.REJECTED)) {
-                    joined_order.setStatus(OrderState.ALLOCATED);
+                joined_order.addProduct(validate_sub_order.intoOrderProduct(k));
+                
+                if (
+                    validate_sub_order.getOrderParts() == joined_order.getSubOrderCount() 
+                ) {
+                    if (joined_order.containsUnallocatedOrder()) {
+                        joined_order.setStatus(OrderState.REJECTED);
+                    } else {
+                        joined_order.setStatus(OrderState.ALLOCATED);
+                    }
                 }
 
                 return joined_order;
-            }).toStream()
-            .filter(
-                (k, v) -> v.isNot(OrderState.PENDING)
-            ).to(orders_topic.getName());
+            }).toStream();
+
+        // Confirm allocated orders
+        validated_orders.filter((k, v) -> v.is(OrderState.ALLOCATED))
+            .to(
+                orders_topic.getName(),
+                Produced.with(
+                    orders_topic.getKeySerde(),
+                    orders_topic.getValueSerde()
+                )
+            );
+
+        // Return all allocated stock for rejected order to warehouse inventory
+        validated_orders.filter((k, v) -> v.is(OrderState.REJECTED))
+            .flatMapValues(
+                (k, v) -> v.getProducts()
+            ).filter(
+                (k, v) -> v.hasNoVolume()   
+            ).map(
+                (k, v) -> new KeyValue<>(v.getId(), v.getVolume())
+            ).to(
+                inventory_topic.getName(),
+                Produced.with(
+                    inventory_topic.getKeySerde(), 
+                    inventory_topic.getValueSerde()
+                )
+            );
     }
 
     @Bean
     public void split_orders(StreamsBuilder builder) {
         var topics = Topics.build_topics();
         var orders_topic = topics.getOrders();
-        var sub_order_validations_topic = topics.getSubOrderValidations();
+        var sub_orders_topic = topics.getSubOrders();
 
+        // Split order into product sub_orders
         builder
             .stream(
                 orders_topic.getName(),
                 Consumed.with(orders_topic.getKeySerde(), orders_topic.getValueSerde())
             ).filter((id, order) -> order.is(OrderState.PENDING))
             .flatMap((id, order) -> order.intoSubOrders(id))
-            .to(sub_order_validations_topic.getName());
+            .to(
+                sub_orders_topic.getName(),
+                Produced.with(
+                    sub_orders_topic.getKeySerde(),
+                    sub_orders_topic.getValueSerde()
+                )
+            );
     }
 
     @Bean void validate_sub_orders(StreamsBuilder builder) {
@@ -110,6 +147,12 @@ public class Inventory {
                     .currentInventory(right)
                     .build()
             ).process(OrderValidator::new, allocated_inventory_topic.getName())
-            .to(sub_order_validations_topic.getName());
+            .to(
+                sub_order_validations_topic.getName(),
+                Produced.with(
+                    sub_order_validations_topic.getKeySerde(),
+                    sub_order_validations_topic.getValueSerde()
+                )
+            );
     }
 }

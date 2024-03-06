@@ -37,18 +37,20 @@ public class OrderValidator implements Processor<Long, JoinedSubOrder, Long, Val
         }
 
         var new_allocation = allocated + sub_order.getVolume();
-
-        ValidatedSubOrder validated_order = null;
-
+        
         var stock_is_available = warehouse_inventory - new_allocation >= 0;
+        
+        Long allocated_stock = sub_order.getVolume();
 
         if (stock_is_available) {
             netInventory.put(product, new_allocation);
+        } else {
+            allocated_stock = 0L;
         }
 
-        validated_order = ValidatedSubOrder.builder()
-            .isFullfilled(stock_is_available)
-            .subOrder(sub_order).build();
+        var validated_order = sub_order.intoValidatedSubOrder(
+            product, allocated_stock
+        );
 
         context.forward(record.withKey(sub_order.getOrderId()).withValue(validated_order));
     }

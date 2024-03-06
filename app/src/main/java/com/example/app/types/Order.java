@@ -28,6 +28,12 @@ public class Order {
         return this.status.isNot(state);
     }
 
+    public boolean containsUnallocatedOrder() {
+        return this.getProducts()
+            .stream()
+            .anyMatch((p) -> p.hasNoVolume());
+    }
+
     public static Order newPending() {
         return Order.builder()
             .status(OrderState.PENDING)

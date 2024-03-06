@@ -2,13 +2,16 @@ package com.example.app.types;
 
 import lombok.Builder;
 import lombok.Getter;
-
 @Builder @Getter
 public class ValidatedSubOrder {
-    private boolean isFullfilled;
-    private SubOrder subOrder;
+    private Long productId;
+    private Integer orderParts;
+    private Long allocatedVolume;
 
-    public OrderProduct intoOrderProduct() {
-        return this.getSubOrder().inOrderProduct();
+    public OrderProduct intoOrderProduct(Long product_id) {
+        return OrderProduct.builder()
+            .id(product_id)
+            .volume(this.getAllocatedVolume())
+            .build();
     }
 }

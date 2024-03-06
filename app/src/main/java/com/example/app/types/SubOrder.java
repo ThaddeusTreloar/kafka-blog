@@ -2,17 +2,19 @@ package com.example.app.types;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
-@Builder @Getter
+@Builder @Getter @Setter
 public class SubOrder {
     private Long orderId;
     private Integer orderParts;
     private Long volume;
 
-    public OrderProduct inOrderProduct() {
-        return OrderProduct.builder()
-            .id(this.getOrderId())
-            .volume(this.getVolume())
+    public ValidatedSubOrder intoValidatedSubOrder(Long product_id, Long volume) {
+        return ValidatedSubOrder.builder()
+            .productId(product_id)
+            .orderParts(this.getOrderParts())
+            .allocatedVolume(volume)
             .build();
     }
 }
