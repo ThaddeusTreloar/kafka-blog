@@ -2,10 +2,14 @@ package com.example.app.types;
 
 public enum OrderState {
     PENDING,
-    CONFIRMED,
+    ALLOCATED,
     REJECTED;
 
-    public boolean is(OrderState cmp) {
-        return this == cmp;
+    public boolean is(OrderState rhs) {
+        return this == rhs;
+    }
+
+    public boolean isNot(OrderState rhs) {
+        return this != rhs;
     }
 }

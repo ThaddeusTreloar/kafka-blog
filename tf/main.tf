@@ -84,7 +84,6 @@ resource "confluent_api_key" "spring-app-api-key" {
   }
 }
 
-
 ## ACLs
 
 resource "confluent_kafka_acl" "spring-app-acl" {
