@@ -7,35 +7,17 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.Stores;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.config.KafkaStreamsConfiguration;
-import org.springframework.kafka.config.StreamsBuilderFactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.example.app.types.JoinedSubOrder;
 import com.example.app.types.Order;
 import com.example.app.types.OrderState;
 import com.example.app.util.Topics;
 
-@Configuration
-public class Inventory {
-
-    public static String RESERVED_STOCK_STORE_NAME = "reserved-stock";
-    public static String SUB_ORDERS_TOPIC = "sub-orders";
-    public static String SUB_ORDER_COUNT_TOPIC = "sub-orders-count";
-
-    
-    @Bean
-    public FactoryBean<StreamsBuilder> init_builder(KafkaStreamsConfiguration config) {
-        var factory_bean = new StreamsBuilderFactoryBean(config);
-
-        factory_bean.setAutoStartup(true);
-
-        return factory_bean;
-    }
-
-    @Bean
+@Component
+public class KakfaProcessors {
+    @Autowired
     public void aggregte_sub_orders(StreamsBuilder builder) {
         var topics = Topics.build_topics();
         var inventory_topic = topics.getWarehouseInventory();
@@ -90,7 +72,7 @@ public class Inventory {
             );
     }
 
-    @Bean
+    @Autowired
     public void split_orders(StreamsBuilder builder) {
         var topics = Topics.build_topics();
         var orders_topic = topics.getOrders();
@@ -112,7 +94,8 @@ public class Inventory {
             );
     }
 
-    @Bean void validate_sub_orders(StreamsBuilder builder) {
+    @Autowired 
+    public void validate_sub_orders(StreamsBuilder builder) {
         var topics = Topics.build_topics();
 
         var inventory_topic = topics.getWarehouseInventory();

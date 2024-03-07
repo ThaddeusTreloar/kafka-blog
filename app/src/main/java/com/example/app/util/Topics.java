@@ -18,11 +18,11 @@ public class Topics {
     private Topic<Long, SubOrder> subOrders;
     private Topic<Long, ValidatedSubOrder> subOrderValidations;
 
-    private static String WAREHOUSE_INVENTORY_TOPIC = "INVENTORY";
-    private static String ALLOCATED_INVENTORY_TOPIC = "NET_INVENTORY";
-    private static String ORDERS_TOPIC = "ORDERS";
-    private static String SUB_ORDERS_TOPIC = "SUB_ORDERS";
-    private static String SUB_ORDER_VALIDATIONS_TOPIC = "SUB_ORDER_VALIDATIONS";
+    private static String WAREHOUSE_INVENTORY_TOPIC = "inventory";
+    private static String ALLOCATED_INVENTORY_TOPIC = "allocated_inventory";
+    private static String ORDERS_TOPIC = "orders";
+    private static String SUB_ORDERS_TOPIC = "sub_orders";
+    private static String SUB_ORDER_VALIDATIONS_TOPIC = "sub_order_validations";
 
     public static Topics build_topics() {
         var warehouse_inventory = Topic.<Long, Long>builder()
