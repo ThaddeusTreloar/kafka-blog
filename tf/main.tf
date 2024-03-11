@@ -2,7 +2,7 @@ terraform {
   required_providers {
     confluent = {
       source  = "confluentinc/confluent"
-      version = "1.64.0"
+      version = "1.65.0"
     }
   }
 }
@@ -14,6 +14,7 @@ provider "confluent" {
   cloud_api_secret = var.confluent_cloud_api_secret
 }
 
+
 resource "confluent_environment" "example_environment" {
     display_name = "ExampleEnvironment"
 }
@@ -21,13 +22,15 @@ resource "confluent_environment" "example_environment" {
 resource "confluent_kafka_cluster" "example_cluster" {
     display_name = "basic_kafka_cluster"
     availability = "SINGLE_ZONE"
-    cloud        = "AWS"
-    region       = "ap-southeast-2"
+    cloud        = var.cloud_provider
+    region       = var.deployment_region
     basic {}
 
     environment {
         id = confluent_environment.example_environment.id
     }
+
+    depends_on = [ confluent_environment.example_environment ]
 }
 
 ## Service account
@@ -35,12 +38,16 @@ resource "confluent_kafka_cluster" "example_cluster" {
 resource "confluent_service_account" "cluster-manager" {
   display_name = "cluster-manager-sa"
   description  = "Service Account for managing cluster settings"
+
+  depends_on = [ confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_role_binding" "cluster-manager-rbac" {
     principal   = "User:${confluent_service_account.cluster-manager.id}"
     role_name   = "CloudClusterAdmin"
     crn_pattern = confluent_kafka_cluster.example_cluster.rbac_crn
+
+    depends_on = [ confluent_service_account.cluster-manager ]
 }
 
 resource "confluent_api_key" "cluster-manager-api-key" {
@@ -62,11 +69,15 @@ resource "confluent_api_key" "cluster-manager-api-key" {
       id = confluent_environment.example_environment.id
     }
   }
+
+  depends_on = [ confluent_service_account.cluster-manager ]
 }
 
 resource "confluent_service_account" "spring-app" {
   display_name = "spring-app-sa"
   description  = "Service Account for spring app"
+
+  depends_on = [ confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_api_key" "spring-app-api-key" {
@@ -88,16 +99,18 @@ resource "confluent_api_key" "spring-app-api-key" {
       id = confluent_environment.example_environment.id
     }
   }
+
+  depends_on = [ confluent_service_account.spring-app ]
 }
 
 ## ACLs
 
-resource "confluent_kafka_acl" "spring-app-acl" {
+resource "confluent_kafka_acl" "spring-app-topics-acl" {
   kafka_cluster {
     id = confluent_kafka_cluster.example_cluster.id
   }
   resource_type = "TOPIC"
-  resource_name = "spring-app-topic-acl"
+  resource_name = "*"
   pattern_type  = "LITERAL"
   principal     = format("User:%s", confluent_service_account.spring-app.id)
   host          = "*"
@@ -110,6 +123,95 @@ resource "confluent_kafka_acl" "spring-app-acl" {
     key = confluent_api_key.cluster-manager-api-key.id
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster, confluent_service_account.spring-app ]
+}
+
+resource "confluent_kafka_acl" "spring-app-read-group-acl" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.example_cluster.id
+  }
+  resource_type = "GROUP"
+  resource_name = "*"
+  pattern_type  = "LITERAL"
+  principal     = format("User:%s", confluent_service_account.spring-app.id)
+  host          = "*"
+  operation     = "READ"
+  permission    = "ALLOW"
+
+  rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
+
+  credentials {
+    key = confluent_api_key.cluster-manager-api-key.id
+    secret = confluent_api_key.cluster-manager-api-key.secret
+  }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster, confluent_service_account.spring-app ]
+}
+resource "confluent_kafka_acl" "spring-app-describe-group-acl" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.example_cluster.id
+  }
+  resource_type = "GROUP"
+  resource_name = "*"
+  pattern_type  = "LITERAL"
+  principal     = format("User:%s", confluent_service_account.spring-app.id)
+  host          = "*"
+  operation     = "DESCRIBE"
+  permission    = "ALLOW"
+
+  rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
+
+  credentials {
+    key = confluent_api_key.cluster-manager-api-key.id
+    secret = confluent_api_key.cluster-manager-api-key.secret
+  }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster, confluent_service_account.spring-app ]
+}
+
+resource "confluent_kafka_acl" "spring-app-txid-describe-acl" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.example_cluster.id
+  }
+  resource_type = "TRANSACTIONAL_ID"
+  resource_name = "*"
+  pattern_type  = "LITERAL"
+  principal     = format("User:%s", confluent_service_account.spring-app.id)
+  host          = "*"
+  operation     = "DESCRIBE"
+  permission    = "ALLOW"
+
+  rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
+
+  credentials {
+    key = confluent_api_key.cluster-manager-api-key.id
+    secret = confluent_api_key.cluster-manager-api-key.secret
+  }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster, confluent_service_account.spring-app ]
+}
+
+resource "confluent_kafka_acl" "spring-app-txid-write-acl" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.example_cluster.id
+  }
+  resource_type = "TRANSACTIONAL_ID"
+  resource_name = "*"
+  pattern_type  = "LITERAL"
+  principal     = format("User:%s", confluent_service_account.spring-app.id)
+  host          = "*"
+  operation     = "WRITE"
+  permission    = "ALLOW"
+
+  rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
+
+  credentials {
+    key = confluent_api_key.cluster-manager-api-key.id
+    secret = confluent_api_key.cluster-manager-api-key.secret
+  }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster, confluent_service_account.spring-app ]
 }
 
 ## Topics
@@ -121,14 +223,12 @@ resource "confluent_kafka_topic" "inventory-topic" {
   topic_name         = "inventory"
   rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
 
-  lifecycle {
-    prevent_destroy = true
-  }
-
   credentials {
     key = confluent_api_key.cluster-manager-api-key.id
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "allocated_inventory-topic" {
@@ -138,14 +238,12 @@ resource "confluent_kafka_topic" "allocated_inventory-topic" {
   topic_name         = "allocated_inventory"
   rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
 
-  lifecycle {
-    prevent_destroy = true
-  }
-
   credentials {
     key = confluent_api_key.cluster-manager-api-key.id
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "orders-topic" {
@@ -155,14 +253,12 @@ resource "confluent_kafka_topic" "orders-topic" {
   topic_name         = "orders"
   rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
 
-  lifecycle {
-    prevent_destroy = true
-  }
-
   credentials {
     key = confluent_api_key.cluster-manager-api-key.id
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "sub_orders-topic" {
@@ -172,14 +268,12 @@ resource "confluent_kafka_topic" "sub_orders-topic" {
   topic_name         = "sub_orders"
   rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
 
-  lifecycle {
-    prevent_destroy = true
-  }
-
   credentials {
     key = confluent_api_key.cluster-manager-api-key.id
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "sub_order_validations-topic" {
@@ -189,12 +283,30 @@ resource "confluent_kafka_topic" "sub_order_validations-topic" {
   topic_name         = "sub_order_validations"
   rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
 
-  lifecycle {
-    prevent_destroy = true
-  }
-
   credentials {
     key = confluent_api_key.cluster-manager-api-key.id
     secret = confluent_api_key.cluster-manager-api-key.secret
+  }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+}
+
+# Schema Registry
+
+#resource "confluent_schema_registry_cluster" "schema-registry" {
+#  environment {
+#    id = confluent_environment.example_environment.id
+#  }
+#}
+
+# Flink
+
+resource "confluent_flink_compute_pool" "core_compute_pool" {
+  display_name     = "core_compute_pool"
+  cloud            = var.cloud_provider
+  region           = var.deployment_region
+  max_cfu          = 5
+  environment {
+    id = confluent_environment.example_environment.id
   }
 }

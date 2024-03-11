@@ -12,13 +12,8 @@ import lombok.Setter;
 
 @Builder @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class Order {
-    private Long orderId;
     private OrderState status;
-    private List<OrderProduct> products;
-
-    public void addProduct(OrderProduct product) {
-        this.products.add(product);
-    }
+    private List<ProductVolume> products;
 
     public boolean is(OrderState state) {
         return this.status.is(state);
@@ -34,47 +29,20 @@ public class Order {
             .anyMatch((p) -> p.hasNoVolume());
     }
 
-    public static Order newPending() {
-        return Order.builder()
-            .status(OrderState.PENDING)
-            .build();
-    }
-
-    public List<KeyValue<Long, SubOrder>> intoSubOrders() {
+    public List<KeyValue<ProductId, SubOrder>> intoSubOrders(Long order_id) {
         return this.products
             .stream()
             .map(
                 (product) -> {
-                    var product_id = product.getId();
+                    var product_id = new ProductId(product.getProductId());
                     var new_suborder = SubOrder.builder()
-                        .orderId(this.getOrderId())
+                        .orderId(order_id)
                         .volume(product.getVolume())
                         .orderParts(this.getProducts().size())
                         .build();
 
-                    return new KeyValue<Long, SubOrder>(product_id, new_suborder);
+                    return new KeyValue<ProductId, SubOrder>(product_id, new_suborder);
                 }
             ).toList();
-    }
-
-    public List<KeyValue<Long, SubOrder>> intoSubOrders(Long id) {
-        return this.products
-            .stream()
-            .map(
-                (product) -> {
-                    var product_id = product.getId();
-                    var new_suborder = SubOrder.builder()
-                        .orderId(id)
-                        .volume(product.getVolume())
-                        .orderParts(this.getProducts().size())
-                        .build();
-
-                    return new KeyValue<Long, SubOrder>(product_id, new_suborder);
-                }
-            ).toList();
-    }
-
-    public Integer getSubOrderCount() {
-        return this.products.size();
     }
 }

@@ -2,111 +2,91 @@ package com.example.app.biz;
 
 import java.util.HashMap;
 
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.Stores;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.example.app.types.JoinedSubOrder;
 import com.example.app.types.Order;
+import com.example.app.types.PartialOrder;
+import com.example.app.types.OrderId;
 import com.example.app.types.OrderState;
 import com.example.app.util.Topics;
 
 @Component
 public class KakfaProcessors {
     @Autowired
-    public void aggregte_sub_orders(StreamsBuilder builder) {
-        var topics = Topics.build_topics();
-        var inventory_topic = topics.getWarehouseInventory();
-        var orders_topic = topics.getOrders();
-        var sub_order_validations_topic = topics.getSubOrderValidations();
+    public void aggregte_sub_orders(StreamsBuilder builder, Topics kafkaTopicsConfig) {
+var inventory_topic = kafkaTopicsConfig.getWarehouseInventory();
+var orders_topic = kafkaTopicsConfig.getOrders();
+var sub_order_validations_topic = kafkaTopicsConfig.getSubOrderValidations();
 
-        var validated_orders = builder.stream(
-                sub_order_validations_topic.getName(),
-                Consumed.with(sub_order_validations_topic.getKeySerde(), sub_order_validations_topic.getValueSerde())
-            ).groupByKey()
-            .aggregate(Order::newPending, (k, validate_sub_order, joined_order) -> {
-                joined_order.setOrderId(k);
-                joined_order.addProduct(validate_sub_order.intoOrderProduct(k));
-                
-                if (
-                    validate_sub_order.getOrderParts() == joined_order.getSubOrderCount() 
-                ) {
-                    if (joined_order.containsUnallocatedOrder()) {
-                        joined_order.setStatus(OrderState.REJECTED);
-                    } else {
-                        joined_order.setStatus(OrderState.ALLOCATED);
-                    }
-                }
+var validated_orders = builder.stream(
+        sub_order_validations_topic.getName(),
+        Consumed.with(sub_order_validations_topic.getKeySerde(), sub_order_validations_topic.getValueSerde())
+    ).groupByKey()
+    .aggregate(PartialOrder::new, (k, validate_sub_order, joined_order) -> {
+        joined_order.addProduct(validate_sub_order.intoProductVolume());
+        joined_order.setOrderParts(validate_sub_order.getOrderParts());
+        
+        return joined_order;
+    }).toStream();
 
-                return joined_order;
-            }).toStream();
+var agg_orders = validated_orders.filter((k, v) -> v.hasAllProducts());
 
-        // Confirm allocated orders
-        validated_orders.filter((k, v) -> v.is(OrderState.ALLOCATED))
-            .to(
-                orders_topic.getName(),
-                Produced.with(
-                    orders_topic.getKeySerde(),
-                    orders_topic.getValueSerde()
-                )
-            );
+agg_orders.filter((k, v) -> !v.containsUnallocatedOrder())
+    .mapValues((k, v) -> v.intoOrder(OrderState.ALLOCATED))
+    .to(
+        orders_topic.getName()
+    );
 
-        // Return all allocated stock for rejected order to warehouse inventory
-        validated_orders.filter((k, v) -> v.is(OrderState.REJECTED))
-            .flatMapValues(
-                (k, v) -> v.getProducts()
-            ).filter(
-                (k, v) -> v.hasNoVolume()   
-            ).map(
-                (k, v) -> new KeyValue<>(v.getId(), v.getVolume())
-            ).to(
-                inventory_topic.getName(),
-                Produced.with(
-                    inventory_topic.getKeySerde(), 
-                    inventory_topic.getValueSerde()
-                )
-            );
+agg_orders.filter((k, v) -> v.containsUnallocatedOrder())
+    .mapValues((k, v) -> v.intoOrder(OrderState.REJECTED))
+    .to(
+        orders_topic.getName()
+    );
+
+agg_orders.filter((k, v) -> v.containsUnallocatedOrder())
+    .flatMapValues(
+        (k, v) -> v.getProducts()
+    ).filter(
+        (k, v) -> v.hasNoVolume()
+    ).to(
+        inventory_topic.getName()
+    );
     }
 
     @Autowired
-    public void split_orders(StreamsBuilder builder) {
-        var topics = Topics.build_topics();
-        var orders_topic = topics.getOrders();
-        var sub_orders_topic = topics.getSubOrders();
+    public void split_orders(StreamsBuilder builder, Topics kafkaTopicsConfig) {
+        var orders_topic = kafkaTopicsConfig.getOrders();
+        var sub_orders_topic = kafkaTopicsConfig.getSubOrders();
 
         // Split order into product sub_orders
         builder
-            .stream(
+            .<OrderId, Order>stream(
                 orders_topic.getName(),
                 Consumed.with(orders_topic.getKeySerde(), orders_topic.getValueSerde())
             ).filter((id, order) -> order.is(OrderState.PENDING))
-            .flatMap((id, order) -> order.intoSubOrders(id))
+            .flatMap((id, order) -> order.intoSubOrders(id.getOrderId()))
             .to(
-                sub_orders_topic.getName(),
-                Produced.with(
-                    sub_orders_topic.getKeySerde(),
-                    sub_orders_topic.getValueSerde()
-                )
+                sub_orders_topic.getName()
             );
     }
 
     @Autowired 
-    public void validate_sub_orders(StreamsBuilder builder) {
-        var topics = Topics.build_topics();
-
-        var inventory_topic = topics.getWarehouseInventory();
-        var sub_order_validations_topic = topics.getSubOrderValidations();
-        var sub_orders_topic = topics.getSubOrders();
-        var allocated_inventory_topic = topics.getAllocatedInventory();
+    public void validate_sub_orders(StreamsBuilder builder, Topics kafkaTopicsConfig) {
+        var inventory_topic = kafkaTopicsConfig.getWarehouseInventory();
+        var sub_order_validations_topic = kafkaTopicsConfig.getSubOrderValidations();
+        var sub_orders_topic = kafkaTopicsConfig.getSubOrders();
+        var allocated_inventory_topic = kafkaTopicsConfig.getAllocatedInventory();
 
         var inventory = builder.stream(
                 inventory_topic.getName(),
                 Consumed.with(inventory_topic.getKeySerde(), inventory_topic.getValueSerde())
-            ).toTable();
+            ).groupByKey()
+            .reduce((left, right) -> left.addVolume(right));
 
         var sub_orders = builder.stream(
                 sub_orders_topic.getName(),
@@ -127,15 +107,11 @@ public class KakfaProcessors {
                 inventory, 
                 (left, right) -> JoinedSubOrder.builder()
                     .subOrder(left)
-                    .currentInventory(right)
+                    .currentInventory(right.getVolume())
                     .build()
             ).process(OrderValidator::new, allocated_inventory_topic.getName())
             .to(
-                sub_order_validations_topic.getName(),
-                Produced.with(
-                    sub_order_validations_topic.getKeySerde(),
-                    sub_order_validations_topic.getValueSerde()
-                )
+                sub_order_validations_topic.getName()
             );
     }
 }

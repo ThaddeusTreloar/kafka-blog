@@ -1,0 +1,23 @@
+WITH joined_inventory as (
+    SELECT 
+        warehouseInventory,
+        allocatedInventory,
+        warehouse_inventory.productId
+    FROM warehouse_inventory
+    INNER JOIN allocated_inventory
+    ON warehouse_inventory.productId = allocated_inventory.productId
+)
+
+INSERT INTO allocated_inventory (
+    SELECT
+        productId,
+        CASE
+            WHEN (volume + allocatedInventory) <= warehouseInventory THEN SUM(volume)
+            (ELSE) 0
+        END as volume,
+        event_time
+    FROM
+        sub_orders
+    GROUP BY 
+        productId
+)

@@ -120,3 +120,5 @@ terraform.rc
 .vscode/*
 
 .mvn
+
+rendered_docker_compose.yaml

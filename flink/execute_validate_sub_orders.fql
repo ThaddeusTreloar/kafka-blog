@@ -1,0 +1,36 @@
+INSERT INTO joined_inventory (
+  SELECT
+    SUM(t2.volume) as warehouse_volume,
+    SUM(t1.volume) as allocated_volume,
+    t1.productId,
+    t1.event_time
+  FROM validate_sub_orders as t1
+  LEFT JOIN warehouse_inventory as t2 ON t2.productId = t1.productId
+  GROUP BY productId
+)
+
+INSERT INTO validate_sub_orders (
+  SELECT
+    orderId,
+    orderParts,
+    productId,
+    WHEN t2.allocated_volume<=t2.warehouse_volume 
+      OR t2.allocated_volume=NULL THEN t1.volume 
+      (ELSE 0) 
+    END AS volume,
+    t1.event_time
+  FROM (
+    SELECT
+      orderId,
+      orderParts,
+      volume,
+      productId,
+      event_time,
+      LAG(event_time, 1) OVER (PARTITION BY productId) AS prev_event_time
+    FROM
+      sub_orders_flink
+  ) AS t1
+  LEFT JOIN joined_inventory as t2 FOR SYSTEM_TIME AS OF t1.prev_event_time ON t1.productId = t2.productId
+  WHERE
+    t2.allocated_volume<=t2.warehouse_volume OR t2.allocated_volume=NULL
+)

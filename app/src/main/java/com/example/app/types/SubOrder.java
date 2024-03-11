@@ -10,11 +10,17 @@ public class SubOrder {
     private Integer orderParts;
     private Long volume;
 
-    public ValidatedSubOrder intoValidatedSubOrder(Long product_id, Long volume) {
+    public SubOrder withVolume(Long new_volume) {
+        this.setVolume(new_volume);
+
+        return this;
+    }
+
+    public ValidatedSubOrder intoValidatedSubOrder(Long product_id) {
         return ValidatedSubOrder.builder()
             .productId(product_id)
             .orderParts(this.getOrderParts())
-            .allocatedVolume(volume)
+            .volume(this.getVolume())
             .build();
     }
 }

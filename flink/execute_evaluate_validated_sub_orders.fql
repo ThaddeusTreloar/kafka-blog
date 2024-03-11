@@ -1,0 +1,47 @@
+INSERT INTO folded_orders (
+    SELECT 
+        orderId,
+        orderParts,
+        collect(ROW(productId, volume)) as products,
+    FROM validate_sub_orders
+    GROUP BY 
+        orderId
+)
+
+INSERT INTO orders (
+    select 
+        folded_orders.products,
+        "ALLOCATED" as status
+    FROM folded_orders, LATERAL
+        (
+            SELECT MIN(volume) as price
+            FROM folded_orders
+            CROSS JOIN UNNEST(products) AS t(productId, volume)
+        ) as min_price
+    WHERE 
+        min_price.price > 0
+)
+
+INSERT INTO orders (
+    select 
+        folded_orders.products,
+        "REJECTED" as status
+    FROM folded_orders, LATERAL
+        (
+            SELECT MIN(volume) as price
+            FROM folded_orders
+            CROSS JOIN UNNEST(products) AS t(productId, volume)
+        ) as min_price
+    WHERE 
+        min_price.price = 0
+)
+
+INSERT INTO warehouse_inventory (
+    select
+        productId,
+        volume
+    FROM orders
+    WHERE
+        status = "REJECTED"
+    CROSS JOIN UNNEST(products) AS t(productId, volume)
+)

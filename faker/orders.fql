@@ -1,0 +1,18 @@
+CREATE TABLE `fake_orders` (
+    orderId BIGINT NOT NULL,
+    status VARCHAR(16) NOT NULL,
+    products ARRAY<
+        ROW(productId BIGINT, volume BIGINT)
+    >,
+    PRIMARY KEY (orderId) NOT ENFORCED
+)
+WITH (
+  'connector' = 'faker',
+  'number-of-rows' = '500',
+  'rows-per-second' = '10',
+  'fields.orderId.expression' = '#{number.numberBetween ''0'',''1000''}',
+  'fields.status.expression' = '#{numerify ''user_##''}',
+  'fields.browser.expression' = '#{options.option ''PENDING''}',
+  'fields.products.expression' =  '#{number.numberBetween ''0'',''1000''}',
+  'fields.locations.length' = '3'
+);

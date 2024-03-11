@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS sub_order_validations (
+    productId BIGINT NOT NULL,
+    orderId BIGINT NOT NULL,
+    orderParts INT NOT NULL,
+    volume BIGINT NOT NULL,
+    PRIMARY KEY (productId) NOT ENFORCED
+) WITH (
+    'value.format' = 'json-registry'
+);

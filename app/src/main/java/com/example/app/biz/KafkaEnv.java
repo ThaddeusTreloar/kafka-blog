@@ -1,25 +1,22 @@
 package com.example.app.biz;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
-@Configuration
-@ConfigurationProperties(prefix = "kafka")
+@Getter @Setter @AllArgsConstructor @Builder
 public class KafkaEnv {
     private String apiKey;
     private String apiSecret;
     private String bootstrapServers;
+    private String schemaRegistryUrl;
 
     public boolean isNull() {
         return this.getApiKey() == null  
             | this.getApiSecret() == null
-            | this.getBootstrapServers() == null;
+            | this.getBootstrapServers() == null
+            | this.getSchemaRegistryUrl() == null;
     }
 
     public String getNullVar() {
@@ -31,6 +28,8 @@ public class KafkaEnv {
         }
         else if (this.getBootstrapServers() == null) {
             return "SPRING_KAFKA_BOOTSTRAP_SERVERS";
+        } else if (this.getSchemaRegistryUrl() == null) {
+            return "SPRING_KAFKA_SCHEMA_REGISTRY_URL";
         } else {
             return "";
         }
