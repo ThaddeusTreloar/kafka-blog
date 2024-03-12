@@ -1,0 +1,82 @@
+{
+    "generators": [
+        {
+            "topic": "customers2",
+            "key": {
+                "orderId": {
+                    "_gen": "sequentialInteger",
+                    "n": {
+                        "_gen": "uniformDistribution",
+                        "bounds": [
+                            1,
+                            1000
+                        ]
+                    }
+                }
+            },
+            "value": {
+                "customerId": {
+                    "_gen": "integer",
+                    "n": {
+                        "_gen": "uniformDistribution",
+                        "bounds": [
+                            1,
+                            10
+                        ]
+                    }
+                },
+                "status": "PENDING",
+                "products": {
+                    "_gen": "repeatedly",
+                    "n": {
+                        "_gen": "uniformDistribution",
+                        "bounds": [
+                            1,
+                            10
+                        ]
+                    },
+                    "target": {
+                        "product": {
+                            "_gen": "integer",
+                            "n": {
+                                "_gen": "uniformDistribution",
+                                "bounds": [
+                                    1,
+                                    50
+                                ]
+                            }
+                        },
+                        "volume": {
+                            "_gen": "integer",
+                            "n": {
+                                "_gen": "uniformDistribution",
+                                "bounds": [
+                                    1,
+                                    5
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "connections": {
+        "dev-kafka": {
+            "kind": "kafka",
+            "producerConfigs": {
+                "bootstrap.servers": "SASL_SSL://pkc-ldvj1.ap-southeast-2.aws.confluent.cloud:9092",
+                "key.serializer": "io.shadowtraffic.kafka.serdes.JsonSerializer",
+                "value.serializer": "io.shadowtraffic.kafka.serdes.JsonSerializer",
+                "security.protocol": "SASL_SSL",
+                "sasl.jaas.config": "org.apache.kafka.common.security.plain.PlainLoginModule required username='TQ7EN3SXOWEQZZ42' password='XJkoUu9XtF6N55OpgvUcmmGoYVD978s7czAoBIy14RsbIVZK4dfovlzHrXizQ7ar';",
+                "sasl.mechanism": "PLAIN",
+                "sasl.username": "TQ7EN3SXOWEQZZ42",
+                "sasl.password": "XJkoUu9XtF6N55OpgvUcmmGoYVD978s7czAoBIy14RsbIVZK4dfovlzHrXizQ7ar",
+                "schema.registry.url": "https://psrc-3r6ym.ap-southeast-2.aws.confluent.cloud",
+                "schema.registry.user": "H6HAERG57DNMQ7NL",
+                "schema.registry.password": "z15CMee7axfdfN42n4C765WJY+4T6peZMl74p2Gnbt3U2uuZTuYwFevG1QcnGZve"
+            }
+        }
+    }
+}

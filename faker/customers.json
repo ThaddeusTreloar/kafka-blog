@@ -1,0 +1,70 @@
+{
+    "generators": [
+        {
+            "topic": "customers",
+            "key": {
+                "customerId": {
+                    "_gen": "sequentialInteger",
+                    "n": {
+                        "_gen": "uniformDistribution",
+                        "bounds": [
+                            1,
+                            50
+                        ] 
+                    }
+                }
+            },  
+            "value": {
+                "firstName": {
+                    "_gen": "string",
+                    "expr": "#{Name.firstName}"
+                },
+                "lastName": {
+                    "_gen": "string",
+                    "expr": "#{Name.lastName}"
+                },
+                "address": {
+                    "_gen": "string",
+                    "expr": "#{Address.streetAddress}"
+                },
+                "city": {
+                    "_gen": "string",
+                    "expr": "#{Address.city}"
+                },
+                "country": {
+                    "_gen": "string",
+                    "expr": "#{Address.country}"
+                },
+                "state": {
+                    "_gen": "string",
+                    "expr": "#{Address.state}"
+                },
+                "zip": {
+                    "_gen": "string",
+                    "expr": "#{Address.zipCode}"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "dev-kafka": {
+            "kind": "kafka",
+            "producerConfigs": {
+                "bootstrap.servers": "SASL_SSL://pkc-ldvj1.ap-southeast-2.aws.confluent.cloud:9092",
+                "key.serializer": "io.confluent.kafka.serializers.json.KafkaJsonSchemaSerializer",
+                "value.serializer": "io.confluent.kafka.serializers.json.KafkaJsonSchemaSerializer",
+                "security.protocol": "SASL_SSL",
+                "sasl.jaas.config": "org.apache.kafka.common.security.plain.PlainLoginModule required username='TQ7EN3SXOWEQZZ42' password='XJkoUu9XtF6N55OpgvUcmmGoYVD978s7czAoBIy14RsbIVZK4dfovlzHrXizQ7ar';",
+                "sasl.mechanism": "PLAIN",
+                "sasl.username": "TQ7EN3SXOWEQZZ42",
+                "sasl.password": "XJkoUu9XtF6N55OpgvUcmmGoYVD978s7czAoBIy14RsbIVZK4dfovlzHrXizQ7ar",
+                "schema.registry.url": "https://psrc-3r6ym.ap-southeast-2.aws.confluent.cloud",
+                "schema.registry.user": "H6HAERG57DNMQ7NL",
+                "schema.registry.password": "z15CMee7axfdfN42n4C765WJY+4T6peZMl74p2Gnbt3U2uuZTuYwFevG1QcnGZve"
+            },
+            "topicPolicy" : {
+                "policy" : "manual"
+            }
+        }
+    }
+}

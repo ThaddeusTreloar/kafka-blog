@@ -2,16 +2,16 @@ INSERT INTO folded_orders (
     SELECT 
         orderId,
         orderParts,
-        collect(ROW(productId, volume)) as products,
-    FROM validate_sub_orders
+        collect(ROW(productId, volume)) as products
+    FROM sub_order_validations
     GROUP BY 
-        orderId
+        orderId, orderParts
 )
 
 INSERT INTO orders (
     select 
         folded_orders.products,
-        "ALLOCATED" as status
+        'ALLOCATED' as status
     FROM folded_orders, LATERAL
         (
             SELECT MIN(volume) as price
@@ -25,15 +25,15 @@ INSERT INTO orders (
 INSERT INTO orders (
     select 
         folded_orders.products,
-        "REJECTED" as status
+        'REJECTED' as status
     FROM folded_orders, LATERAL
         (
             SELECT MIN(volume) as price
             FROM folded_orders
             CROSS JOIN UNNEST(products) AS t(productId, volume)
         ) as min_price
-    WHERE 
-        min_price.price = 0
+    WHERE
+        min_price.price <= 0
 )
 
 INSERT INTO warehouse_inventory (
@@ -41,7 +41,7 @@ INSERT INTO warehouse_inventory (
         productId,
         volume
     FROM orders
-    WHERE
-        status = "REJECTED"
     CROSS JOIN UNNEST(products) AS t(productId, volume)
+    WHERE
+        status = 'REJECTED'
 )

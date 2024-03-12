@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "volume": {
+      "connect.index": 0,
+      "connect.type": "int64",
+      "type": "number"
+    }
+  },
+  "required": [
+    "volume"
+  ],
+  "title": "Record",
+  "type": "object"
+}

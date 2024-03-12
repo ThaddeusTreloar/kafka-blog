@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS sub_order_validations (
+    orderId BIGINT NOT NULL,
+    productId BIGINT NOT NULL,
+    orderParts INT NOT NULL,
+    volume BIGINT NOT NULL,
+    event_time TIMESTAMP(3),
+    WATERMARK FOR event_time AS event_time,
+    PRIMARY KEY (orderId) NOT ENFORCED
+);

@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "customerId": {
+      "connect.index": 0,
+      "connect.type": "int64",
+      "type": "number"
+    }
+  },
+  "required": [
+    "customerId"
+  ],
+  "title": "Record",
+  "type": "object"
+}

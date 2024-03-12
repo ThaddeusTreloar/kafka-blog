@@ -1,10 +1,8 @@
 CREATE TABLE joined_inventory (
+  productId BIGINT NOT NULL,
   warehouse_volume BIGINT NOT NULL,
   allocated_volume BIGINT NOT NULL,
-  productId BIGINT NOT NULL,
   event_time TIMESTAMP(3),
   WATERMARK FOR event_time as event_time,
   PRIMARY KEY (productId) NOT ENFORCED
-) WITH (
-    'value.format' = 'json-registry'
 );

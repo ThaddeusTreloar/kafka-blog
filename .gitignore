@@ -122,3 +122,5 @@ terraform.rc
 .mvn
 
 rendered_docker_compose.yaml
+license.env
+env.sh

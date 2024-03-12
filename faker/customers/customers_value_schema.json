@@ -1,0 +1,43 @@
+{
+  "properties": {
+    "address": {
+      "connect.index": 2,
+      "type": "string"
+    },
+    "city": {
+      "connect.index": 3,
+      "type": "string"
+    },
+    "country": {
+      "connect.index": 5,
+      "type": "string"
+    },
+    "firstName": {
+      "connect.index": 0,
+      "type": "string"
+    },
+    "lastName": {
+      "connect.index": 1,
+      "type": "string"
+    },
+    "state": {
+      "connect.index": 4,
+      "type": "string"
+    },
+    "zip": {
+      "connect.index": 6,
+      "type": "string"
+    }
+  },
+  "required": [
+    "firstName",
+    "lastName",
+    "address",
+    "city",
+    "state",
+    "country",
+    "zip"
+  ],
+  "title": "Record",
+  "type": "object"
+}

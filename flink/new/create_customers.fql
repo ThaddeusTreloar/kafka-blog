@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS customers (
+    customerId BIGINT NOT NULL,
+    firstName VARCHAR(32) NOT NULL,
+    lastName VARCHAR(32) NOT NULL,
+    address VARCHAR(64) NOT NULL,
+    city VARCHAR(64) NOT NULL,
+    state VARCHAR(64) NOT NULL,
+    country VARCHAR(64) NOT NULL,
+    zip VARCHAR(64) NOT NULL,
+    PRIMARY KEY (customerId) NOT ENFORCED
+) WITH (
+  'key.format' = 'json-registry',
+  'value.format' = 'json-registry'
+);

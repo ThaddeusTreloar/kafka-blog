@@ -7,8 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @NoArgsConstructor @AllArgsConstructor @Setter
-public class OrderId {
+@Getter @AllArgsConstructor @Setter @NoArgsConstructor
+public class CustomerId {
     @JsonProperty
-    private Long orderId;
+    private Long customerId;
 }

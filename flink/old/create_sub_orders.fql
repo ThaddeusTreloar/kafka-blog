@@ -1,9 +1,0 @@
-CREATE TABLE IF NOT EXISTS sub_orders_f (
-    productId BIGINT  NOT NULL,
-    orderId BIGINT  NOT NULL,
-    orderParts INT  NOT NULL,
-    volume BIGINT  NOT NULL,
-    PRIMARY KEY (productId) NOT ENFORCED
-) WITH (
-    'value.format' = 'json-registry'
-);

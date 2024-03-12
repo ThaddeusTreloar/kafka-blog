@@ -1,0 +1,63 @@
+{
+  "properties": {
+    "customerId": {
+      "connect.index": 0,
+      "connect.type": "int64",
+      "type": "number"
+    },
+    "products": {
+      "connect.index": 2,
+      "items": [
+        {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "properties": {
+                "productId": {
+                  "connect.index": 0,
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "connect.type": "int64",
+                      "type": "number"
+                    }
+                  ]
+                },
+                "volume": {
+                  "connect.index": 1,
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "connect.type": "int64",
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              "title": "Record_products",
+              "type": "object"
+            }
+          ]
+        }
+      ],
+      "type": "array"
+    },
+    "status": {
+      "connect.index": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "customerId",
+    "status",
+    "products"
+  ],
+  "title": "Record",
+  "type": "object"
+}

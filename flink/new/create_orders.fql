@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS orders (
+    orderId BIGINT NOT NULL,
+    customerId BIGINT NOT NULL,
+    status VARCHAR(16) NOT NULL,
+    products ARRAY<
+        ROW(productId BIGINT, volume BIGINT)
+    > NOT NULL,
+    PRIMARY KEY (orderId) NOT ENFORCED
+) WITH (
+  'key.format' = 'json-registry',
+  'value.format' = 'json-registry'
+);

@@ -11,12 +11,16 @@ public class KafkaEnv {
     private String apiSecret;
     private String bootstrapServers;
     private String schemaRegistryUrl;
+    private String schemaRegistryUser;
+    private String schemaRegistryPass;
 
     public boolean isNull() {
         return this.getApiKey() == null  
             | this.getApiSecret() == null
             | this.getBootstrapServers() == null
-            | this.getSchemaRegistryUrl() == null;
+            | this.getSchemaRegistryUrl() == null
+            | this.getSchemaRegistryUser() == null
+            | this.getSchemaRegistryPass() == null;
     }
 
     public String getNullVar() {

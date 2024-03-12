@@ -1,0 +1,9 @@
+# Kafka configuration
+bootstrap.servers=SPRING_KAFKA_BOOTSTRAP_SERVERS__
+security.protocol=SASL_SSL
+sasl.mechanisms=PLAIN
+sasl.username=SPRING_KAFKA_API_KEY__
+sasl.password=SPRING_KAFKA_API_SECRET__
+#compression.type=gzip
+#compression.level=9
+# statistics.interval.ms=1000

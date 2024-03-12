@@ -18,6 +18,7 @@ import org.springframework.kafka.config.KafkaStreamsConfiguration;
 
 import com.example.app.util.Topics;
 
+import io.confluent.kafka.streams.serdes.json.KafkaJsonSchemaSerde;
 import lombok.extern.java.Log;
 import scala.collection.mutable.StringBuilder;
 
@@ -30,6 +31,8 @@ public class KafkaConfig {
     public static String SPRING_KAFKA_API_SECRET_ENV = "SPRING_KAFKA_API_SECRET";
     public static String SPRING_KAFKA_BOOTSTRAP_SERVERS_ENV = "SPRING_KAFKA_BOOTSTRAP_SERVERS";
     public static String SPRING_KAFKA_SCHEMA_REGISTRY_URL_ENV = "SPRING_KAFKA_SCHEMA_REGISTRY_URL";
+    public static String SPRING_KAFKA_SCHEMA_USER_ENV = "SPRING_KAFKA_SCHEMA_USER";
+    public static String SPRING_KAFKA_SCHEMA_PASS_ENV = "SPRING_KAFKA_SCHEMA_PASS";
 
     @Autowired
     private Environment environment;
@@ -58,8 +61,8 @@ public class KafkaConfig {
 
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaEnvConfig.getBootstrapServers());
 
-        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, KafkaJsonSchemaSerde.class.getName());
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, KafkaJsonSchemaSerde.class.getName());
 
         props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName());
 
@@ -75,6 +78,8 @@ public class KafkaConfig {
             .apiSecret(environment.getProperty(SPRING_KAFKA_API_SECRET_ENV))
             .bootstrapServers(environment.getProperty(SPRING_KAFKA_BOOTSTRAP_SERVERS_ENV))
             .schemaRegistryUrl(environment.getProperty(SPRING_KAFKA_SCHEMA_REGISTRY_URL_ENV))
+            .schemaRegistryUser(environment.getProperty(SPRING_KAFKA_SCHEMA_USER_ENV))
+            .schemaRegistryPass(environment.getProperty(SPRING_KAFKA_SCHEMA_PASS_ENV))
             .build();
 
         return config;

@@ -1,0 +1,14 @@
+{
+    "properties": {
+      "productId": {
+        "connect.index": 0,
+        "connect.type": "int64",
+        "type": "number"
+      }
+    },
+    "required": [
+      "productId"
+    ],
+    "title": "Record",
+    "type": "object"
+  }

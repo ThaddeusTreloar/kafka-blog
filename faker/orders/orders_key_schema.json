@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "orderId": {
+      "connect.index": 0,
+      "connect.type": "int64",
+      "type": "number"
+    }
+  },
+  "required": [
+    "orderId"
+  ],
+  "title": "Record",
+  "type": "object"
+}

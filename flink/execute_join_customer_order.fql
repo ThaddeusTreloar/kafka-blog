@@ -1,0 +1,16 @@
+INSERT INTO logistics_orders (
+    SELECT 
+        orders.orderId,
+        customers.firstName,
+        customers.lastName,
+        customers.address,
+        customers.city,
+        customers.country,
+        customers.state,
+        customers.zip,
+        status,
+        orders.products
+    FROM orders 
+    LEFT JOIN customers ON customers.customerId=orders.customerId
+    WHERE orders.status='ALLOCATED'   
+)

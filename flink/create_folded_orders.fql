@@ -1,10 +1,8 @@
 CREATE TABLE IF NOT EXISTS folded_orders (
     orderId BIGINT NOT NULL,
     orderParts INT  NOT NULL,
-    products ARRAY<
+    products MULTISET<
         ROW(productId BIGINT, volume BIGINT)
     >,
     PRIMARY KEY (orderId) NOT ENFORCED
-) WITH (
-    'value.format' = 'json-registry'
-)
+);

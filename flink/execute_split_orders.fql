@@ -5,6 +5,6 @@ INSERT INTO sub_orders (
         cardinality(products) as orderParts,
         volume
     FROM orders
-    where status = "PENDING"
     CROSS JOIN unnest(products) as flat_products(productId, volume)
+    WHERE status = 'PENDING'
 );

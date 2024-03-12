@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS warehouse_inventory (
+    productId BIGINT NOT NULL,
+    volume BIGINT NOT NULL,
+    PRIMARY KEY (productId) NOT ENFORCED
+);
+
+CREATE TABLE IF NOT EXISTS inventory2 (
+    productId BIGINT NOT NULL,
+    volume BIGINT NOT NULL,
+    PRIMARY KEY (productId) NOT ENFORCED
+) WITH (
+  'key.format' = 'json-registry',
+  'value.format' = 'json-registry'
+);
