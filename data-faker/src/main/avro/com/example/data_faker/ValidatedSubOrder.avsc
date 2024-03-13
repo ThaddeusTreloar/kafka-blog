@@ -1,0 +1,23 @@
+{
+    "fields": [
+      {
+        "name": "customerId",
+        "type": "long"
+      },
+      {
+        "name": "productId",
+        "type": "long"
+      },
+      {
+        "name": "orderParts",
+        "type": "int"
+      },
+      {
+        "name": "volume",
+        "type": "long"
+      }
+    ],
+    "name": "ValidatedSubOrder",
+    "namespace": "org.apache.flink.avro.generated",
+    "type": "record"
+  }

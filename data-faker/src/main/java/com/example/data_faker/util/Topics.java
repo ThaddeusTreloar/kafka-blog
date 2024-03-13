@@ -3,28 +3,22 @@ package com.example.data_faker.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.avro.specific.SpecificRecord;
+import org.apache.flink.avro.generated.Customer;
+import org.apache.flink.avro.generated.CustomerId;
+import org.apache.flink.avro.generated.Order;
+import org.apache.flink.avro.generated.OrderId;
+
 import com.example.data_faker.biz.KafkaEnv;
-import com.example.data_faker.types.Customer;
-import com.example.data_faker.types.CustomerId;
-import com.example.data_faker.types.InventoryVolume;
-import com.example.data_faker.types.Order;
-import com.example.data_faker.types.OrderId;
-import com.example.data_faker.types.ProductId;
-import com.example.data_faker.types.SubOrder;
-import com.example.data_faker.types.ValidatedSubOrder;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
-import io.confluent.kafka.streams.serdes.json.KafkaJsonSchemaSerde;
+import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import lombok.Getter;
 
 @Getter
 public class Topics {
-    private Topic<ProductId, InventoryVolume> warehouseInventory;
-    private Topic<ProductId, InventoryVolume> allocatedInventory;
     private Topic<CustomerId, Customer> customers;
     private Topic<OrderId, Order> orders;
-    private Topic<ProductId, SubOrder> subOrders;
-    private Topic<OrderId, ValidatedSubOrder> subOrderValidations;
 
     /*
      * inventory.key = long
@@ -54,16 +48,12 @@ public class Topics {
      * }
      */
 
-    public static String WAREHOUSE_INVENTORY_TOPIC = "warehouse_inventory";
-    public static String ALLOCATED_INVENTORY_TOPIC = "allocated_inventory";
+    public static String CUSTOMERS_TOPIC = "customers";
     public static String ORDERS_TOPIC = "orders";
-    public static String SUB_ORDERS_TOPIC = "sub_orders";
-    public static String SUB_ORDER_VALIDATIONS_TOPIC = "sub_order_validations";
 
-    private <T> KafkaJsonSchemaSerde<T> initSerde(Map<String, String> props, boolean isKey) {
-        var serde = new KafkaJsonSchemaSerde<T>();
+    private <T extends SpecificRecord> SpecificAvroSerde<T> initSerde(Map<String, String> props, boolean isKey) {
+        var serde = new SpecificAvroSerde<T>();
         serde.configure(props, isKey);
-
         return serde;
     }
 
@@ -81,38 +71,14 @@ public class Topics {
                 .toString()
         );
 
-        this.warehouseInventory = Topic.<ProductId, InventoryVolume>builder()
-            .name(WAREHOUSE_INVENTORY_TOPIC)
-            .keySerde(this.initSerde(props, true))
-            .valueSerde(this.initSerde(props, false))
-            .build();
-
-        this.allocatedInventory = Topic.<ProductId, InventoryVolume>builder()
-            .name(ALLOCATED_INVENTORY_TOPIC)
-            .keySerde(this.initSerde(props, true))
-            .valueSerde(this.initSerde(props, false))
-            .build();
-
         this.customers = Topic.<CustomerId, Customer>builder()
-            .name(ORDERS_TOPIC)
+            .name(CUSTOMERS_TOPIC)
             .keySerde(this.initSerde(props, true))
             .valueSerde(this.initSerde(props, false))
             .build();
 
         this.orders = Topic.<OrderId, Order>builder()
             .name(ORDERS_TOPIC)
-            .keySerde(this.initSerde(props, true))
-            .valueSerde(this.initSerde(props, false))
-            .build();
-
-        this.subOrders = Topic.<ProductId, SubOrder>builder()
-            .name(SUB_ORDERS_TOPIC)
-            .keySerde(this.initSerde(props, true))
-            .valueSerde(this.initSerde(props, false))
-            .build();
-
-        this.subOrderValidations = Topic.<OrderId, ValidatedSubOrder>builder()
-            .name(SUB_ORDER_VALIDATIONS_TOPIC)
             .keySerde(this.initSerde(props, true))
             .valueSerde(this.initSerde(props, false))
             .build();

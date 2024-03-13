@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,7 @@ import org.springframework.kafka.config.KafkaStreamsConfiguration;
 import com.example.streams_app.util.Topics;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
-import io.confluent.kafka.streams.serdes.json.KafkaJsonSchemaSerde;
 import lombok.extern.java.Log;
-import scala.collection.mutable.StringBuilder;
 
 @Log
 @Configuration
@@ -40,7 +39,7 @@ public class KafkaConfig {
     @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     public KafkaStreamsConfiguration kStreamsConfigs(KafkaEnv kafkaEnvConfig) {
         Map<String, Object> props = new HashMap<>();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "springApplication");
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "StreamProcessingApplication");
  
         props.put(StreamsConfig.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
@@ -61,8 +60,8 @@ public class KafkaConfig {
 
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaEnvConfig.getBootstrapServers());
 
-        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, KafkaJsonSchemaSerde.class.getName());
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, KafkaJsonSchemaSerde.class.getName());
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class.getName());
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class.getName());
 
         props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName());
 

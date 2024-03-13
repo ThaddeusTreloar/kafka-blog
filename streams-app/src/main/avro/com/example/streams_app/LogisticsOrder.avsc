@@ -1,0 +1,70 @@
+{
+    "fields": [
+      {
+        "name": "firstName",
+        "type": "string"
+      },
+      {
+        "name": "lastName",
+        "type": "string"
+      },
+      {
+        "name": "address",
+        "type": "string"
+      },
+      {
+        "name": "city",
+        "type": "string"
+      },
+      {
+        "name": "state",
+        "type": "string"
+      },
+      {
+        "name": "country",
+        "type": "string"
+      },
+      {
+        "name": "zip",
+        "type": "string"
+      },
+      {
+        "name": "status",
+        "type": "string"
+      },
+      {
+        "name": "products",
+        "type": {
+          "items": [
+            "null",
+            {
+              "fields": [
+                {
+                  "default": null,
+                  "name": "productId",
+                  "type": [
+                    "null",
+                    "long"
+                  ]
+                },
+                {
+                  "default": null,
+                  "name": "volume",
+                  "type": [
+                    "null",
+                    "long"
+                  ]
+                }
+              ],
+              "name": "ProductVolume",
+              "type": "record"
+            }
+          ],
+          "type": "array"
+        }
+      }
+    ],
+    "name": "LogisticsOrder",
+    "namespace": "org.apache.flink.avro.generated",
+    "type": "record"
+  }

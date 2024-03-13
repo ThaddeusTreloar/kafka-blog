@@ -228,7 +228,7 @@ resource "confluent_kafka_topic" "inventory-topic" {
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
 
-  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+  depends_on = [ confluent_service_account.cluster-manager, confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "allocated_inventory-topic" {
@@ -243,7 +243,7 @@ resource "confluent_kafka_topic" "allocated_inventory-topic" {
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
 
-  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+  depends_on = [ confluent_service_account.cluster-manager, confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "customers-topic" {
@@ -258,7 +258,7 @@ resource "confluent_kafka_topic" "customers-topic" {
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
 
-  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+  depends_on = [ confluent_service_account.cluster-manager, confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "orders-topic" {
@@ -273,7 +273,7 @@ resource "confluent_kafka_topic" "orders-topic" {
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
 
-  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+  depends_on = [ confluent_service_account.cluster-manager, confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "sub_orders-topic" {
@@ -288,7 +288,7 @@ resource "confluent_kafka_topic" "sub_orders-topic" {
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
 
-  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+  depends_on = [ confluent_service_account.cluster-manager, confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "sub_order_validations-topic" {
@@ -303,7 +303,7 @@ resource "confluent_kafka_topic" "sub_order_validations-topic" {
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
 
-  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+  depends_on = [ confluent_service_account.cluster-manager, confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 resource "confluent_kafka_topic" "logistics_orders-topic" {
@@ -318,7 +318,7 @@ resource "confluent_kafka_topic" "logistics_orders-topic" {
     secret = confluent_api_key.cluster-manager-api-key.secret
   }
 
-  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+  depends_on = [ confluent_service_account.cluster-manager, confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
 # Schema Registry

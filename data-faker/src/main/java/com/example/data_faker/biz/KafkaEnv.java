@@ -2,6 +2,8 @@ package com.example.data_faker.biz;
 
 import java.util.Properties;
 
+import org.apache.flink.avro.generated.Order;
+import org.apache.flink.avro.generated.OrderId;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 
@@ -37,6 +39,7 @@ public class KafkaEnv {
     }
 
     public boolean isNull() {
+        var r  = new OrderId();
         return this.getApiKey() == null  
             | this.getApiSecret() == null
             | this.getBootstrapServers() == null

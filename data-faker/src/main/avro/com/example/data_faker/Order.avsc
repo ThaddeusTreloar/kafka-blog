@@ -1,0 +1,46 @@
+{
+    "fields": [
+      {
+        "name": "customerId",
+        "type": "long"
+      },
+      {
+        "name": "status",
+        "type": "string"
+      },
+      {
+        "name": "products",
+        "type": {
+          "items": [
+            "null",
+            {
+              "fields": [
+                {
+                  "default": null,
+                  "name": "productId",
+                  "type": [
+                    "null",
+                    "long"
+                  ]
+                },
+                {
+                  "default": null,
+                  "name": "volume",
+                  "type": [
+                    "null",
+                    "long"
+                  ]
+                }
+              ],
+              "name": "ProductVolume",
+              "type": "record"
+            }
+          ],
+          "type": "array"
+        }
+      }
+    ],
+    "name": "Order",
+    "namespace": "org.apache.flink.avro.generated",
+    "type": "record"
+  }

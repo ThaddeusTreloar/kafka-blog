@@ -1,0 +1,11 @@
+{
+    "fields": [
+      {
+        "name": "productId",
+        "type": "long"
+      }
+    ],
+    "name": "ProductId",
+    "namespace": "org.apache.flink.avro.generated",
+    "type": "record"
+  }

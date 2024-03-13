@@ -2,6 +2,8 @@ package com.example.data_faker.types;
 
 import java.util.List;
 
+import org.apache.flink.avro.generated.ProductVolume;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;

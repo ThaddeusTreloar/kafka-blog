@@ -2,6 +2,8 @@ package com.example.streams_app.types;
 
 import java.util.List;
 
+import org.apache.flink.avro.generated.Order;
+import org.apache.flink.avro.generated.ProductVolume;
 import org.apache.kafka.streams.KeyValue;
 
 import lombok.AllArgsConstructor;
@@ -12,17 +14,12 @@ import lombok.Setter;
 
 @Builder @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class PartialOrder {
+    private Long customerId;
     private Integer orderParts;
     private List<ProductVolume> products;
 
     public void addProduct(ProductVolume product) {
         this.products.add(product);
-    }
-
-    public boolean containsUnallocatedOrder() {
-        return this.getProducts()
-            .stream()
-            .anyMatch((p) -> p.hasNoVolume());
     }
 
     public boolean hasAllProducts() {
@@ -33,17 +30,11 @@ public class PartialOrder {
         return this.products.size();
     }
 
-    public List<KeyValue<ProductId, InventoryVolume>> intoInventory() {
-        return this.getProducts()
-            .stream()
-            .map((v) -> new KeyValue<>(v.intoProductId(), v.intoInventoryVolume()))
-            .toList();
-    }
-
-    public Order intoOrder(OrderState status) {
-        return Order.builder()
-            .products(this.getProducts())
-            .status(status)
+    public Order intoOrder(String status) {
+        return Order.newBuilder()
+            .setCustomerId(this.getCustomerId())
+            .setProducts(this.getProducts())
+            .setStatus(status)
             .build();
     }
 }

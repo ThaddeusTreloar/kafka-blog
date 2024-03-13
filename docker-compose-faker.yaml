@@ -1,0 +1,24 @@
+version: "0.1.0"
+
+networks:
+  kafka-blog-demo:
+    external: false
+    name: kafka-blog-demo
+
+services:
+
+  data-faker:
+    platform: linux/amd64
+              
+    networks:
+      - kafka-blog-demo
+
+    image: data_faker:0.0.1
+    environment:
+    
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: SPRING_KAFKA_BOOTSTRAP_SERVERS__
+      SPRING_KAFKA_API_KEY: SPRING_KAFKA_API_KEY__
+      SPRING_KAFKA_API_SECRET: SPRING_KAFKA_API_SECRET__
+      SPRING_KAFKA_SCHEMA_REGISTRY_URL: SPRING_KAFKA_SCHEMA_REGISTRY_URL__
+      SPRING_KAFKA_SCHEMA_USER: SPRING_KAFKA_SCHEMA_USER__
+      SPRING_KAFKA_SCHEMA_PASS: SPRING_KAFKA_SCHEMA_PASS__

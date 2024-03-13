@@ -12,11 +12,20 @@ export SPRING_KAFKA_SCHEMA_REGISTRY_URL=$(terraform output -json spring-app-cred
 export SPRING_KAFKA_SCHEMA_USER=$(terraform output -json spring-app-credentials | jq -r .schema_user)
 export SPRING_KAFKA_SCHEMA_PASS=$(terraform output -json spring-app-credentials | jq -r .schema_pass)
 
-cd ../streams-app
-mvn install
+export DOCKER_DEFAULT_PLATFORM=linux/amd64
 
 cd ../data-faker
-mvn install
+
+./build_image.sh
 
 cd ..
-(trap 'kill 0' SIGINT; java -jar data-faker/target/data-faker-0.0.1.jar & java -jar streams-app/target/streams-app-0.0.1.jar)
+
+cat ./docker-compose-faker.yaml \
+    | sed "s|SPRING_KAFKA_API_KEY__|$SPRING_KAFKA_API_KEY|g" \
+    | sed "s|SPRING_KAFKA_API_SECRET__|$SPRING_KAFKA_API_SECRET|g" \
+    | sed "s|SPRING_KAFKA_BOOTSTRAP_SERVERS__|$SPRING_KAFKA_BOOTSTRAP_SERVERS|g" \
+    | sed "s|SPRING_KAFKA_SCHEMA_REGISTRY_URL__|$SPRING_KAFKA_SCHEMA_REGISTRY_URL|g" \
+    | sed "s|SPRING_KAFKA_SCHEMA_USER__|$SPRING_KAFKA_SCHEMA_USER|g" \
+    | sed "s|SPRING_KAFKA_SCHEMA_PASS__|$SPRING_KAFKA_SCHEMA_PASS|g" > rendered_docker_compose-faker.yaml
+
+docker-compose -f rendered_docker_compose-faker.yaml up

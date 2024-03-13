@@ -63,4 +63,17 @@ registry SSL handshakes, there is also a version of the start script that runs t
 start-no-docker.sh
 ```
 
+## Changing to the FlinkSQL queries
+
+When you are migrating to the FlinkSQL queries, you will need to stop your kafka streams instance.
+You can just ctl+c the terminal running your start script. Then, to restart the faker, just run:
+```
+start-faker.sh
+```
+or 
+```
+start-faker-no-docker.sh
+```
+If you aren't using docker.
+
 Happy building!

@@ -1,15 +1,15 @@
 package com.example.streams_app.biz;
 
+import org.apache.flink.avro.generated.InventoryVolume;
+import org.apache.flink.avro.generated.OrderId;
+import org.apache.flink.avro.generated.ProductId;
+import org.apache.flink.avro.generated.ValidatedSubOrder;
 import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.processor.api.ProcessorContext;
 import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.state.KeyValueStore;
 
-import com.example.streams_app.types.InventoryVolume;
 import com.example.streams_app.types.JoinedSubOrder;
-import com.example.streams_app.types.OrderId;
-import com.example.streams_app.types.ProductId;
-import com.example.streams_app.types.ValidatedSubOrder;
 import com.example.streams_app.util.Topics;
 
 public class OrderValidator implements Processor<ProductId, JoinedSubOrder, OrderId, ValidatedSubOrder> {
@@ -49,9 +49,13 @@ public class OrderValidator implements Processor<ProductId, JoinedSubOrder, Orde
 
         var order_id = new OrderId(sub_order.getOrderId());
 
-        var validated_order = sub_order.withVolume(
-            allocated_stock
-        ).intoValidatedSubOrder(product.getProductId());
+        sub_order.setVolume(allocated_stock);
+
+        var validated_order = ValidatedSubOrder.newBuilder()
+            .setProductId(product.getProductId())
+            .setOrderParts(sub_order.getOrderParts())
+            .setVolume(sub_order.getVolume())
+            .build();
 
         context.forward(
             record

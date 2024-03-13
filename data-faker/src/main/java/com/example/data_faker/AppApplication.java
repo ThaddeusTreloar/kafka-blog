@@ -5,17 +5,17 @@ import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
+import org.apache.flink.avro.generated.Customer;
+import org.apache.flink.avro.generated.CustomerId;
+import org.apache.flink.avro.generated.Order;
+import org.apache.flink.avro.generated.OrderId;
+import org.apache.flink.avro.generated.ProductVolume;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 import com.example.data_faker.biz.KafkaEnv;
-import com.example.data_faker.types.Customer;
-import com.example.data_faker.types.CustomerId;
-import com.example.data_faker.types.Order;
-import com.example.data_faker.types.OrderId;
 import com.example.data_faker.types.OrderState;
-import com.example.data_faker.types.ProductVolume;
 import com.example.data_faker.util.Topics;
 import com.github.javafaker.Faker;
 
@@ -47,14 +47,14 @@ public class AppApplication {
 
 		LongStream.range(0, 50).forEach(
 			n -> {
-				var customer_value = Customer.builder()
-						.firstName(faker.name().firstName())
-						.lastName(faker.name().lastName())
-						.address(faker.address().streetAddress())
-						.city(faker.address().city())
-						.country(faker.address().country())
-						.state(faker.address().state())
-						.zip(faker.address().zipCode())
+				var customer_value = Customer.newBuilder()
+						.setFirstName(faker.name().firstName())
+						.setLastName(faker.name().lastName())
+						.setAddress(faker.address().streetAddress())
+						.setCity(faker.address().city())
+						.setCountry(faker.address().country())
+						.setState(faker.address().state())
+						.setZip(faker.address().zipCode())
 						.build();
 				
 				var customer_key = new CustomerId(n);
@@ -94,19 +94,19 @@ public class AppApplication {
 				IntStream.range(0, faker.number().numberBetween(0, 5))
 					.forEach(
 						n -> {
-							var op = ProductVolume.builder()
-								.productId(Long.valueOf(faker.number().numberBetween(0, 100)))
-								.volume(Long.valueOf(faker.number().numberBetween(0, 5)))
+							var op = ProductVolume.newBuilder()
+								.setProductId(Long.valueOf(faker.number().numberBetween(0, 100)))
+								.setVolume(Long.valueOf(faker.number().numberBetween(0, 5)))
 								.build();
 	
 							products.add(op);
 						}
 					);
 	
-				var order_val = Order.builder()
-					.customerId(l)
-					.products(products)
-					.status(OrderState.ALLOCATED)
+				var order_val = Order.newBuilder()
+					.setCustomerId(l)
+					.setProducts(products)
+					.setStatus(OrderState.ALLOCATED)
 					.build();
 
 				var order_key = new OrderId(order_num);

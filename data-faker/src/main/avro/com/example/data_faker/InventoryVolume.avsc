@@ -1,0 +1,11 @@
+{
+    "fields": [
+      {
+        "name": "volume",
+        "type": "long"
+      }
+    ],
+    "name": "InventoryVolume",
+    "namespace": "org.apache.flink.avro.generated",
+    "type": "record"
+  }
