@@ -246,6 +246,21 @@ resource "confluent_kafka_topic" "allocated_inventory-topic" {
   depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
+resource "confluent_kafka_topic" "customers-topic" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.example_cluster.id
+  }
+  topic_name         = "customers"
+  rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
+
+  credentials {
+    key = confluent_api_key.cluster-manager-api-key.id
+    secret = confluent_api_key.cluster-manager-api-key.secret
+  }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+}
+
 resource "confluent_kafka_topic" "orders-topic" {
   kafka_cluster {
     id = confluent_kafka_cluster.example_cluster.id
@@ -291,6 +306,21 @@ resource "confluent_kafka_topic" "sub_order_validations-topic" {
   depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
 }
 
+resource "confluent_kafka_topic" "logistics_orders-topic" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.example_cluster.id
+  }
+  topic_name         = "logistics_orders"
+  rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
+
+  credentials {
+    key = confluent_api_key.cluster-manager-api-key.id
+    secret = confluent_api_key.cluster-manager-api-key.secret
+  }
+
+  depends_on = [ confluent_api_key.cluster-manager-api-key, confluent_kafka_cluster.example_cluster ]
+}
+
 # Schema Registry
 
 resource "confluent_schema_registry_cluster" "schema-registry" {
@@ -304,7 +334,7 @@ resource "confluent_schema_registry_cluster" "schema-registry" {
   }
 
   region {
-    id = var.deployment_region
+    id = var.schema_registry_region
   }
 }
 
@@ -326,6 +356,20 @@ resource "confluent_api_key" "spring-app-schema-registry-api-key" {
       id = confluent_environment.example_environment.id
     }
   }
+}
+
+## Spring App Schema Registry RBAC
+
+resource "confluent_role_binding" "spring-app-sr-read-rb" {
+  principal = "User:${confluent_service_account.spring-app.id}"
+  role_name = "DeveloperRead"
+  crn_pattern = "${confluent_schema_registry_cluster.schema-registry.resource_name}/subject=*"
+}
+
+resource "confluent_role_binding" "spring-app-sr-write-rb" {
+  principal = "User:${confluent_service_account.spring-app.id}"
+  role_name = "DeveloperWrite"
+  crn_pattern = "${confluent_schema_registry_cluster.schema-registry.resource_name}/subject=*"
 }
 
 # Flink

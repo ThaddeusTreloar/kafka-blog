@@ -17,6 +17,7 @@ import org.springframework.kafka.config.KafkaStreamsConfiguration;
 
 import com.example.streams_app.util.Topics;
 
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig;
 import io.confluent.kafka.streams.serdes.json.KafkaJsonSchemaSerde;
 import lombok.extern.java.Log;
 import scala.collection.mutable.StringBuilder;
@@ -64,6 +65,17 @@ public class KafkaConfig {
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, KafkaJsonSchemaSerde.class.getName());
 
         props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName());
+
+        props.put("schema.registry.url", kafkaEnvConfig.getSchemaRegistryUrl());
+        props.put(SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE, "USER_INFO");
+        props.put(
+            SchemaRegistryClientConfig.USER_INFO_CONFIG, 
+            new StringBuilder()
+                .append(kafkaEnvConfig.getSchemaRegistryUser())
+                .append(":")
+                .append(kafkaEnvConfig.getSchemaRegistryPass())
+                .toString()
+        );
 
         log.info("Finished kafka config");
 

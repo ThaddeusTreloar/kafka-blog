@@ -20,7 +20,9 @@ import com.example.data_faker.util.Topics;
 import com.github.javafaker.Faker;
 
 import io.confluent.kafka.serializers.json.KafkaJsonSchemaSerializer;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class AppApplication {
 
 	public static void main(String[] args) {
@@ -57,7 +59,8 @@ public class AppApplication {
 				
 				var customer_key = new CustomerId(n);
 
-				System.out.println("here");
+				log.info(customer_key.toString());
+				log.info(customer_value.toString());
 
 				var record = new ProducerRecord<>("customers", customer_key, customer_value);
 
@@ -105,8 +108,13 @@ public class AppApplication {
 					.products(products)
 					.status(OrderState.ALLOCATED)
 					.build();
+
+				var order_key = new OrderId(order_num);
+
+				log.info(order_key.toString());
+				log.info(order_val.toString());
 	
-				var record = new ProducerRecord<>("orders", new OrderId(order_num), order_val);
+				var record = new ProducerRecord<>("orders", order_key, order_val);
 	
 				var f = order_producer.send(record);
 	
