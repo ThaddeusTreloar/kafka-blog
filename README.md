@@ -46,3 +46,6 @@ Once you have completed the setup, run the following setup command:
 start.sh
 ```
 This will initialise the Confluent Cloud environment, along with all dependencies.  
+It will then run the streaming apps from the inital deployment in the blog, ready to start tinkering.
+
+Happy building!
