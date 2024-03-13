@@ -1,3 +1,0 @@
-schemaRegistryURL=SPRING_KAFKA_SCHEMA_REGISTRY_URL__
-schemaRegistryUser=SPRING_KAFKA_API_KEY__
-schemaRegistryPassword=SPRING_KAFKA_API_SECRET__

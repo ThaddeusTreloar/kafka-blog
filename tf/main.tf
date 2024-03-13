@@ -220,7 +220,7 @@ resource "confluent_kafka_topic" "inventory-topic" {
   kafka_cluster {
     id = confluent_kafka_cluster.example_cluster.id
   }
-  topic_name         = "inventory"
+  topic_name         = "warehouse_inventory"
   rest_endpoint      = confluent_kafka_cluster.example_cluster.rest_endpoint
 
   credentials {
@@ -293,11 +293,40 @@ resource "confluent_kafka_topic" "sub_order_validations-topic" {
 
 # Schema Registry
 
-#resource "confluent_schema_registry_cluster" "schema-registry" {
-#  environment {
-#    id = confluent_environment.example_environment.id
-#  }
-#}
+resource "confluent_schema_registry_cluster" "schema-registry" {
+  # !!!
+  # NOTE THAT THIS RESORUCE WILL BE DEPRECATED IN THE NEXT MAJOR VERSION (2.0)
+  # !!!
+  package = "ESSENTIALS"
+
+  environment {
+    id = confluent_environment.example_environment.id
+  }
+
+  region {
+    id = var.deployment_region
+  }
+}
+
+resource "confluent_api_key" "spring-app-schema-registry-api-key" {
+  display_name = "spring-app-schema-registry-api-key"
+  description  = "Schema Registry API Key that is owned by 'spring-app' service account"
+  owner {
+    id          = confluent_service_account.spring-app.id
+    api_version = confluent_service_account.spring-app.api_version
+    kind        = confluent_service_account.spring-app.kind
+  }
+
+  managed_resource {
+    id          = confluent_schema_registry_cluster.schema-registry.id
+    api_version = confluent_schema_registry_cluster.schema-registry.api_version
+    kind        = confluent_schema_registry_cluster.schema-registry.kind
+
+    environment {
+      id = confluent_environment.example_environment.id
+    }
+  }
+}
 
 # Flink
 
