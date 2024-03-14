@@ -3,6 +3,32 @@
 This is the demo tracked by the following [blog post](https://www.deloitte.com/au/en/services/consulting/blogs.html). You can run the demo yourself and follow  
 along while reading.
 
+## Dependencies
+
+There are several tools you will need to run this demo.
+
+### Docker
+
+You will also need to ensure that you have a docker instance running on your machine.  
+A guide for Docker setup can be found [here](https://docs.docker.com/desktop).
+
+You will also need compose if you are running the start script with docker, instructions  
+for install and setup can be found [here](https://docs.docker.com/compose/install/)
+
+### Confluent Cli
+
+For some of the configuration, you will need the confluent CLI, instructions can be found [here](https://docs.confluent.io/confluent-cli/current/install.html)
+
+### Maven
+
+All of the java binaries are built with maven, instructions for installation and setup can  
+be found [here](https://maven.apache.org/install.html)
+
+### Terraform
+
+There infrastructure lifecycle is managed through terraform, instructions for installation  
+and setup can be found [here](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+
 ## Getting a CC cloud key
   
 In order to run this demo you will need a Confluent Cloud cloud api-key. This can be generated  
@@ -43,11 +69,6 @@ use the following command:
 ```
 confluent schema-registry region list
 ```
-
-## Docker
-
-You will also need to ensure that you have a docker instance running on your machine.  
-A guide for Docker setup can be found [here](https://docs.docker.com/desktop).
 
 ## Spinning up the deployment
 
