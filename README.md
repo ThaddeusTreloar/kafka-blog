@@ -33,10 +33,11 @@ export TF_VAR_cloud_provider={{ AWS | AZURE | GCP }}
 export TF_VAR_deployment_region={{your deployment region}}
 
 # Deployment region
-export TF_VAR_deployment_region={{your deployment region}}
+export TF_VAR_schema_registry_region={{your schema registry deployment region}}
 ```
 
 A list of cloud providers for each region can be found [here](https://docs.confluent.io/cloud/current/clusters/regions.html#cloud-providers-and-regions).
+
 There isn't an online resource for schema registry regions, but you can list and find your region by  
 use the following command:
 ```
